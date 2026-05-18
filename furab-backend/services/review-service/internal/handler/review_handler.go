@@ -31,6 +31,17 @@ func (h *ReviewHandler) Routes() chi.Router {
 	return r
 }
 
+// RegisterRoutes registers all review routes on the given chi router.
+func (h *ReviewHandler) RegisterRoutes(r chi.Router) {
+	r.Route("/api/v1/reviews", func(r chi.Router) {
+		r.Post("/", h.Create)
+		r.Get("/{id}", h.GetByID)
+		r.Put("/{id}", h.Update)
+		r.Delete("/{id}", h.Delete)
+		r.Get("/", h.Search)
+	})
+}
+
 // Create handles the POST / request.
 func (h *ReviewHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var m model.Review

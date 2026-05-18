@@ -26,7 +26,7 @@ pipeline {
                     foreach ($s in $services) {
                         Write-Host "=== Unit Testing: $($s.Name) ==="
                         Set-Location $s.FullName
-                        go test ./test/unit/... -v -cover -coverprofile=coverage.out
+                        go test ./test/unit/... -v "-coverpkg=furab-backend/services/$($s.Name)/internal/..." -coverprofile=coverage.out
                         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
                         Set-Location ../..
                     }

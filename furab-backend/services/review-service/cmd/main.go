@@ -2,16 +2,20 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"time"
 
 	"furab-backend/services/review-service/internal/handler"
+	"furab-backend/services/review-service/internal/repository"
+	"furab-backend/services/review-service/internal/service"
 	"furab-backend/shared/config"
 	sharedlogger "furab-backend/shared/logger"
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -20,6 +24,22 @@ func main() {
 
 	logger.Info("starting review-service", "port", cfg.ServerPort)
 
+	// Connect to database
+	db, err := sql.Open("postgres", cfg.DatabaseURL())
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	// Verify database connection
+	if err := db.Ping(); err != nil {
+		log.Fatalf("failed to ping database: %v", err)
+	}
+
+	// Wire dependencies (dependency injection)
+	repo := repository.NewReviewRepository(db)
+	svc := service.NewReviewService(repo)
+
 	// Setup router
 	r := chi.NewRouter()
 	r.Use(chimiddleware.Logger)
@@ -27,7 +47,7 @@ func main() {
 	r.Use(chimiddleware.Timeout(30 * time.Second))
 
 	// Register routes
-	h := handler.NewReviewHandler()
+	h := handler.NewReviewHandler(svc)
 	h.RegisterRoutes(r)
 
 	// Start server
