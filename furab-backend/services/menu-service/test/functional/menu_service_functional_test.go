@@ -27,10 +27,14 @@ var testDB *sql.DB
 
 // TestMain sets up the database environment for functional testing.
 func TestMain(m *testing.M) {
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = "127.0.0.1"
+	}
 	// =========================================================================
 	// Step 1: Ensure the menu_service database exists.
 	// =========================================================================
-	defaultConn := "host=127.0.0.1 port=5432 user=furab password=furab_secret dbname=postgres sslmode=disable"
+	defaultConn := "host=" + dbHost + " port=5432 user=furab password=furab_secret dbname=postgres sslmode=disable"
 	adminDB, err := sql.Open("postgres", defaultConn)
 	if err != nil {
 		log.Fatalf("Failed to open connection to default database: %v", err)
@@ -64,7 +68,7 @@ func TestMain(m *testing.M) {
 	// =========================================================================
 	connStr := os.Getenv("TEST_DB_URL")
 	if connStr == "" {
-		connStr = "host=127.0.0.1 port=5432 user=furab password=furab_secret dbname=menu_service sslmode=disable"
+		connStr = "host=" + dbHost + " port=5432 user=furab password=furab_secret dbname=menu_service sslmode=disable"
 	}
 
 	testDB, err = sql.Open("postgres", connStr)

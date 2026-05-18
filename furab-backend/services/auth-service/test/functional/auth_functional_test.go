@@ -97,7 +97,11 @@ func (s *realTokenGenerator) ValidateToken(token string) (bool, error) {
 // ---------------------------------------------------------
 
 func TestMain(m *testing.M) {
-	adminConn := "host=127.0.0.1 port=5432 user=furab password=furab_secret dbname=postgres sslmode=disable"
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = "127.0.0.1"
+	}
+	adminConn := "host=" + dbHost + " port=5432 user=furab password=furab_secret dbname=postgres sslmode=disable"
 	if envDsn := os.Getenv("TEST_DB_DSN"); envDsn != "" {
 		adminConn = envDsn
 	}
@@ -122,7 +126,7 @@ func TestMain(m *testing.M) {
 	}
 	adminDB.Close()
 
-	connStr := "host=127.0.0.1 port=5432 user=furab password=furab_secret dbname=auth_test sslmode=disable"
+	connStr := "host=" + dbHost + " port=5432 user=furab password=furab_secret dbname=auth_test sslmode=disable"
 	testDB, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Could not connect to database: %v", err)
