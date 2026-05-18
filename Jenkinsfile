@@ -5,6 +5,7 @@ pipeline {
         DOCKER_REGISTRY = 'registry.furab.io'
         KUBE_NAMESPACE  = 'furab'
         GO_VERSION      = '1.22'
+        DOCKER_HOST     = 'npipe:////./pipe/dockerDesktopLinuxEngine'
     }
 
     stages {
@@ -60,6 +61,13 @@ pipeline {
         stage('Build Image') {
             steps {
                 powershell '''
+                    Write-Host "Checking Docker daemon status..."
+                    docker info >$null 2>&1
+                    if ($LASTEXITCODE -ne 0) {
+                        Write-Host "Docker daemon is not running. Attempting to start Docker Desktop..."
+                        Start-Process "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"
+                        Start-Sleep -Seconds 20
+                    }
                     Set-Location furab-backend
                     Write-Host "Building Docker images..."
                     $services = Get-ChildItem -Path services -Directory
