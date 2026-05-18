@@ -85,6 +85,8 @@ pipeline {
             steps {
                 powershell '''
                     Set-Location furab-backend
+                    Write-Host "Cleaning up any old volumes to ensure fresh DB initialization..."
+                    docker compose -f deploy/docker/docker-compose.yml down -v
                     Write-Host "Starting test infrastructure sequentially to prevent Docker crash..."
                     Write-Host "Starting Postgres..."
                     docker compose -f deploy/docker/docker-compose.yml up -d postgres
@@ -103,7 +105,7 @@ pipeline {
                     
                     Write-Host "Waiting for all services to be fully ready..."
                     Start-Sleep -Seconds 15
-
+ 
                     Write-Host "Running functional tests..."
                     $services = Get-ChildItem -Path services -Directory
                     foreach ($s in $services) {
@@ -117,7 +119,7 @@ pipeline {
             }
             post {
                 always {
-                    powershell 'Set-Location furab-backend; docker compose -f deploy/docker/docker-compose.yml down'
+                    powershell 'Set-Location furab-backend; docker compose -f deploy/docker/docker-compose.yml down -v'
                 }
             }
         }
