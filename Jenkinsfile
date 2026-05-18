@@ -6,6 +6,8 @@ pipeline {
         KUBE_NAMESPACE  = 'furab'
         GO_VERSION      = '1.22'
         DOCKER_HOST     = 'npipe:////./pipe/dockerDesktopLinuxEngine'
+        DB_HOST         = 'host.docker.internal'
+        REDIS_HOST      = 'host.docker.internal'
     }
 
     stages {
@@ -111,7 +113,7 @@ pipeline {
                     foreach ($s in $services) {
                         Write-Host "=== Functional Testing: $($s.Name) ==="
                         Set-Location $s.FullName
-                        go test ./test/functional/... -v -tags=functional
+                        go test ./test/functional/... -v -tags=functional -count=1
                         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
                         Set-Location ../..
                     }
